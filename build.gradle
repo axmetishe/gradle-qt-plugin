@@ -1,0 +1,51 @@
+plugins {
+  id 'groovy'
+  id 'java-gradle-plugin'
+  id 'com.gradle.plugin-publish' version '0.12.0'
+}
+
+repositories {
+  mavenCentral()
+  jcenter()
+}
+
+wrapper {
+  distributionType = Wrapper.DistributionType.ALL
+  gradleVersion = '6.7.1'
+}
+
+group = 'org.platops.gradle.plugins.qt'
+version = '0.0.1-SNAPSHOT'
+description = 'Generate QT resources and add to sourceSet'
+
+ext {
+  javaVersion = 11
+  groovyVersion = '3.0.7'
+}
+
+gradlePlugin {
+  plugins {
+    qtPlugin {
+      id = 'org.platops.gradle.plugins.qt.gradle-qt-plugin'
+      displayName = project.description
+      implementationClass = 'org.platops.gradle.plugins.qt.QTPlugin'
+    }
+  }
+}
+
+pluginBundle {
+  description = project.description
+  tags = ['qt', 'qrc', 'moc', 'uic', 'rcc']
+  website = 'https://github.com/axmetishe'
+  vcsUrl = 'https://github.com/axmetishe/gradle-qt-plugin'
+
+  mavenCoordinates {
+    groupId = project.group
+    artifactId = project.name
+  }
+}
+
+dependencies {
+  api gradleApi()
+  implementation "org.codehaus.groovy:groovy:${project.ext.groovyVersion}"
+}
