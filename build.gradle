@@ -1,12 +1,20 @@
 plugins {
   id 'groovy'
   id 'java-gradle-plugin'
+  id 'maven-publish'
   id 'com.gradle.plugin-publish' version '0.12.0'
+  id 'com.github.hierynomus.license' version '0.15.0'
 }
 
 repositories {
   mavenCentral()
   jcenter()
+}
+
+publishing {
+  repositories {
+    mavenLocal()
+  }
 }
 
 wrapper {
@@ -21,6 +29,13 @@ description = 'Generate QT resources and add to sourceSet'
 ext {
   javaVersion = 11
   groovyVersion = '3.0.7'
+}
+
+license {
+  ignoreFailures = true
+  header = file('LICENSE.txt')
+
+  includes(['**/*.groovy'])
 }
 
 gradlePlugin {
