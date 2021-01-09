@@ -37,6 +37,10 @@ class QTPluginExtension {
     ]
   ]
 
+  List<String> modules = [
+    'QtCore'
+  ]
+
   QTPluginExtension(Project project) {
     this.project = project
   }

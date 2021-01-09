@@ -26,6 +26,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.language.cpp.tasks.CppCompile
+import org.gradle.nativeplatform.tasks.AbstractLinkTask
 import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
 import org.platops.gradle.plugins.qt.toolchains.QTToolchain
 import org.slf4j.LoggerFactory
@@ -58,12 +59,30 @@ class QTPlugin implements Plugin<Project> {
       cppCompileTask.dependsOn(project.tasks.withType(QTResourcesTask))
       LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}Resources'")
 
+      LOGGER.lifecycle("Update include paths for compile tasks")
+      cppCompileTask.includes.from qtToolchain.includes
+
+      List<String> includeModules = ['QtCore'] + qtPluginExtension.modules
+      if (cppCompileTask.name.contains('Test')) {
+        includeModules.add('QtTest')
+      }
+      qtToolchain.processQTModulesIncludes(includeModules).each { File moduleInclude ->
+        cppCompileTask.includes.from moduleInclude.path
+      }
+
       if (!cppCompileTask.name.contains('Test')) {
         LOGGER.info("Generated sources attached to '${cppCompileTask.name}'")
 
         qtPluginExtension['resources'].each { String directory, LinkedHashMap<String, Serializable> options ->
           cppCompileTask.source.from project.fileTree(dir: options.targetPath, exclude: '**/*.h')
         }
+      }
+    }
+
+    project.tasks.withType(AbstractLinkTask).configureEach { AbstractLinkTask linkTask ->
+      List<String> includeLibraries = ['QtCore'] + qtPluginExtension.modules
+      qtToolchain.processQTModulesLibraries(includeLibraries).each { File includeLibrary ->
+        linkTask.libs.from includeLibrary.path
       }
     }
   }

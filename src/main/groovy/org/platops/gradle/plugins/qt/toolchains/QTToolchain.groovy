@@ -98,6 +98,31 @@ class QTToolchain {
     }
   }
 
+  List<File> processQTModulesIncludes(List<String> modules) {
+    List<File> includeList = []
+    modules.each { String module ->
+      findDirectories(this.includes, ~/(${module}.*)/).each { File moduleInclude ->
+        LOGGER.info("Adding '${moduleInclude.path}' as include directory.")
+        includeList.add(moduleInclude)
+      }
+    }
+
+    return includeList
+  }
+
+  List<File> processQTModulesLibraries(List<String> modules) {
+    List<File> librariesList = []
+    modules.each { String module ->
+      String librarySuffix = OperatingSystem.LINUX.sharedLibrarySuffix
+      Pattern libPattern = ~/(lib${module.take(2)})(\d)?(${module.drop(2)})${librarySuffix}/
+      File library = findFiles(this.libraries, libPattern).sort().first()
+      LOGGER.info("Adding '${library.name}' as library.")
+      librariesList.add(library)
+    }
+
+    return librariesList
+  }
+
   private static String determineAvailableSDKPath() {
     String availablePath = ''
     String configuredSDKPath = System.getenv(SDK_PATH_VARIABLE) ?: null
@@ -195,11 +220,15 @@ class QTToolchain {
     return findFiles(new File(searchDir), pattern)
   }
 
-  private static List<File> findDirectories(File rootDir, Pattern pattern) {
-    return findFiles(rootDir, pattern).findAll { it.directory }
+  private static List<File> findDirectories(File searchDir, Pattern pattern) {
+    return findFiles(searchDir, pattern).findAll { it.directory }
   }
 
-  static void validateSDKConfiguration(HashMap<String, String> sdkLayout) {
+  private static List<File> findDirectories(String searchDir, Pattern pattern) {
+    return findDirectories(new File(searchDir), pattern)
+  }
+
+  private static void validateSDKConfiguration(HashMap<String, String> sdkLayout) {
     [
       'binaries',
       'includes',
