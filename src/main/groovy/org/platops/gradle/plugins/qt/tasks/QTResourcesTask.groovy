@@ -74,11 +74,11 @@ class QTResourcesTask extends DefaultTask {
     return file.name.take(file.name.lastIndexOf('.'))
   }
 
-  static String getTargetFileName(File file) {
+  protected String getTargetFileName(File file) {
     return "qrc_${getFileName(file)}.cpp"
   }
 
-  private HashMap<File, String> populateRegistry(QTPluginExtension qtPluginExtension, String moduleType) {
+  protected HashMap<File, String> populateRegistry(QTPluginExtension qtPluginExtension, String moduleType) {
     HashMap<File, String> fileRegistry = [:]
     LOGGER.info("Populate file registry")
 
@@ -105,7 +105,7 @@ class QTResourcesTask extends DefaultTask {
 
       project.exec {
         commandLine compileCmd
-        args "-name", fileName, '-o', targetPath, sourceFile.path
+        args '-name', fileName, '-o', targetPath, sourceFile.path
       }
     }
   }

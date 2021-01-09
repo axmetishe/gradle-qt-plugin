@@ -27,6 +27,7 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.language.cpp.tasks.CppCompile
 import org.gradle.nativeplatform.tasks.AbstractLinkTask
+import org.platops.gradle.plugins.qt.tasks.QTMetaObjectTask
 import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
 import org.platops.gradle.plugins.qt.toolchains.QTToolchain
 import org.slf4j.LoggerFactory
@@ -54,12 +55,21 @@ class QTPlugin implements Plugin<Project> {
       compileCmd = qtToolchain.rccTool
       qtSources = qtPluginExtension.resources
     }
+    LOGGER.info("Register ${QTMetaObjectTask.simpleName}")
+    project.tasks.register("${TASK_PREFIX}Sources", QTMetaObjectTask) {
+      description = 'Generate QT Sources'
+      group = EXTENSION_NAME
+      compileCmd = qtToolchain.mocTool
+      qtSources = qtPluginExtension.sources
+    }
 
     project.tasks.withType(CppCompile).configureEach { CppCompile cppCompileTask ->
       cppCompileTask.dependsOn(project.tasks.withType(QTResourcesTask))
       LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}Resources'")
+      cppCompileTask.dependsOn(project.tasks.withType(QTMetaObjectTask))
+      LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}Sources'")
 
-      LOGGER.lifecycle("Update include paths for compile tasks")
+      LOGGER.info("Update include paths for compile tasks")
       cppCompileTask.includes.from qtToolchain.includes
 
       List<String> includeModules = ['QtCore'] + qtPluginExtension.modules
@@ -72,9 +82,16 @@ class QTPlugin implements Plugin<Project> {
 
       if (!cppCompileTask.name.contains('Test')) {
         LOGGER.info("Generated sources attached to '${cppCompileTask.name}'")
-
-        qtPluginExtension['resources'].each { String directory, LinkedHashMap<String, Serializable> options ->
-          cppCompileTask.source.from project.fileTree(dir: options.targetPath, exclude: '**/*.h')
+        [
+          'resources',
+          'sources',
+        ].each { String extensionType ->
+          qtPluginExtension[extensionType].each { String directory, LinkedHashMap<String, Serializable> options ->
+            cppCompileTask.source.from project.fileTree(dir: options.targetPath, exclude: '**/*.h')
+            if (extensionType == 'sources') {
+              cppCompileTask.includes.from directory
+            }
+          }
         }
       }
     }

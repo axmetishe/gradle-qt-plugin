@@ -20,36 +20,36 @@
  *
  *  ==============================================================
  */
-package org.platops.gradle.plugins.qt
+package org.platops.gradle.plugins.qt.tasks
 
-import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.CacheableTask
+import org.slf4j.LoggerFactory
 
-class QTPluginExtension {
+import javax.inject.Inject
 
-  protected Project project
+@CacheableTask
+class QTMetaObjectTask extends QTResourcesTask {
+  private HashMap<File, String> fileRegistry
+  private static final Logger LOGGER = LoggerFactory.getLogger(this.simpleName) as Logger
 
-  @SuppressWarnings("GroovyAssignabilityCheck")
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> resources = [
-    'src/main/resources': [
-      includes: '*.qrc',
-      targetPath: "${project.buildDir}/generated-sources",
-      flat: true
-    ]
-  ]
-  @SuppressWarnings("GroovyAssignabilityCheck")
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> sources = [
-    'src/main/meta-headers': [
-      includes: '**/*.h',
-      targetPath: "${project.buildDir}/generated-sources/sources",
-      flat: true
-    ]
-  ]
+  @Inject
+  QTMetaObjectTask() {
+    this.fileRegistry = populateRegistry(extension, 'sources')
+  }
 
-  List<String> modules = [
-    'QtCore'
-  ]
+  @Override
+  String getTargetFileName(File projectFile) {
+    return "moc_${getFileName(projectFile)}.cpp"
+  }
 
-  QTPluginExtension(Project project) {
-    this.project = project
+  @Override
+  void processSources() {
+    fileRegistry.each { File sourceFile, String targetPath ->
+      project.exec {
+        commandLine compileCmd
+        args '-o', targetPath, sourceFile.path
+      }
+    }
   }
 }
