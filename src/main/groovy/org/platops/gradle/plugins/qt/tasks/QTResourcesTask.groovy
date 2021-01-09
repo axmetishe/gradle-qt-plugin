@@ -40,7 +40,7 @@ class QTResourcesTask extends DefaultTask {
 
   @Inject
   QTResourcesTask() {
-    this.fileRegistry = populateRegistry(extension, 'qtResources')
+    this.fileRegistry = populateRegistry(extension, 'resources')
   }
 
   @Internal

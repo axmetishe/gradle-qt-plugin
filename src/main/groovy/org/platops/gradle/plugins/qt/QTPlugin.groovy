@@ -27,6 +27,7 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.language.cpp.tasks.CppCompile
 import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
+import org.platops.gradle.plugins.qt.toolchains.QTToolchain
 import org.slf4j.LoggerFactory
 
 class QTPlugin implements Plugin<Project> {
@@ -42,14 +43,15 @@ class QTPlugin implements Plugin<Project> {
   }
 
   private static void configure(Project project, QTPluginExtension qtPluginExtension) {
-    LOGGER.lifecycle("${this.simpleName} configuration stage")
+    LOGGER.info("${this.simpleName} configuration stage")
+    QTToolchain qtToolchain = new QTToolchain(qtPluginExtension)
 
     LOGGER.info("Register ${QTResourcesTask.simpleName}")
     project.tasks.register("${TASK_PREFIX}Resources", QTResourcesTask) {
       description = 'Generate QT Resources'
       group = EXTENSION_NAME
-      compileCmd = 'rcc-qt5'
-      qtSources = qtPluginExtension.qtResources
+      compileCmd = qtToolchain.rccTool
+      qtSources = qtPluginExtension.resources
     }
 
     project.tasks.withType(CppCompile).configureEach { CppCompile cppCompileTask ->
@@ -59,7 +61,7 @@ class QTPlugin implements Plugin<Project> {
       if (!cppCompileTask.name.contains('Test')) {
         LOGGER.info("Generated sources attached to '${cppCompileTask.name}'")
 
-        qtPluginExtension['qtResources'].each { String directory, LinkedHashMap<String, Serializable> options ->
+        qtPluginExtension['resources'].each { String directory, LinkedHashMap<String, Serializable> options ->
           cppCompileTask.source.from project.fileTree(dir: options.targetPath, exclude: '**/*.h')
         }
       }

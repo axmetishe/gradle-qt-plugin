@@ -28,7 +28,8 @@ class QTPluginExtension {
 
   protected Project project
 
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> qtResources = [
+  @SuppressWarnings("GroovyAssignabilityCheck")
+  LinkedHashMap<String, LinkedHashMap<String, Serializable>> resources = [
     'src/main/resources': [
       includes: '*.qrc',
       targetPath: "${project.buildDir}/generated-sources",
