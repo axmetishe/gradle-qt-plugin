@@ -29,6 +29,7 @@ import org.gradle.language.cpp.tasks.CppCompile
 import org.gradle.nativeplatform.tasks.AbstractLinkTask
 import org.platops.gradle.plugins.qt.tasks.QTMetaObjectTask
 import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
+import org.platops.gradle.plugins.qt.tasks.QTUIObjectTask
 import org.platops.gradle.plugins.qt.toolchains.QTToolchain
 import org.slf4j.LoggerFactory
 
@@ -62,12 +63,22 @@ class QTPlugin implements Plugin<Project> {
       compileCmd = qtToolchain.mocTool
       qtSources = qtPluginExtension.sources
     }
+    LOGGER.info("Register ${QTUIObjectTask.simpleName}")
+    project.tasks.register("${TASK_PREFIX}UI", QTUIObjectTask) {
+      description = 'Generate QT UI Resources'
+      group = EXTENSION_NAME
+      compileMoc = qtToolchain.mocTool
+      compileCmd = qtToolchain.uicTool
+      qtSources = qtPluginExtension.ui
+    }
 
     project.tasks.withType(CppCompile).configureEach { CppCompile cppCompileTask ->
       cppCompileTask.dependsOn(project.tasks.withType(QTResourcesTask))
       LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}Resources'")
       cppCompileTask.dependsOn(project.tasks.withType(QTMetaObjectTask))
       LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}Sources'")
+      cppCompileTask.dependsOn(project.tasks.withType(QTUIObjectTask))
+      LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}UI'")
 
       LOGGER.info("Update include paths for compile tasks")
       cppCompileTask.includes.from qtToolchain.includes
@@ -85,11 +96,17 @@ class QTPlugin implements Plugin<Project> {
         [
           'resources',
           'sources',
+          'ui',
         ].each { String extensionType ->
           qtPluginExtension[extensionType].each { String directory, LinkedHashMap<String, Serializable> options ->
             cppCompileTask.source.from project.fileTree(dir: options.targetPath, exclude: '**/*.h')
-            if (extensionType == 'sources') {
-              cppCompileTask.includes.from directory
+            switch (extensionType) {
+              case 'sources':
+                cppCompileTask.includes.from directory
+                break
+              case 'ui':
+                cppCompileTask.includes.from options.targetPath
+                break
             }
           }
         }
@@ -98,6 +115,10 @@ class QTPlugin implements Plugin<Project> {
 
     project.tasks.withType(AbstractLinkTask).configureEach { AbstractLinkTask linkTask ->
       List<String> includeLibraries = ['QtCore'] + qtPluginExtension.modules
+      if (linkTask.name.contains('Test')) {
+        includeLibraries.add('QtTest')
+      }
+
       qtToolchain.processQTModulesLibraries(includeLibraries).each { File includeLibrary ->
         linkTask.libs.from includeLibrary.path
       }

@@ -23,15 +23,16 @@
 package org.platops.gradle.plugins.qt.tasks
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
-import org.platops.gradle.plugins.qt.QTPluginExtension
+import org.gradle.api.logging.Logger
 import org.slf4j.LoggerFactory
+import org.platops.gradle.plugins.qt.QTPluginExtension
 
 import javax.inject.Inject
+import java.nio.file.Paths
 
 @CacheableTask
 class QTResourcesTask extends DefaultTask {
@@ -70,12 +71,24 @@ class QTResourcesTask extends DefaultTask {
     this.qtSources = qtSources
   }
 
-  static String getFileName(File file) {
+  protected static String getFileName(File file) {
     return file.name.take(file.name.lastIndexOf('.'))
   }
 
   protected String getTargetFileName(File file) {
     return "qrc_${getFileName(file)}.cpp"
+  }
+
+  protected String getTargetFilePath(File projectFile, LinkedHashMap<String, Serializable> dirParameters) {
+    String relativeDir = project.projectDir.toPath().relativize(projectFile.parentFile.toPath()).toString()
+    return dirParameters.flat ? dirParameters.targetPath : Paths.get(dirParameters.targetPath.toString(), relativeDir)
+  }
+
+  protected void addOutputs(HashMap<File, String> fileRegistry) {
+    fileRegistry.each { File sourceFile, String targetPath ->
+      inputs.file(sourceFile)
+      outputs.file(project.file(targetPath))
+    }
   }
 
   protected HashMap<File, String> populateRegistry(QTPluginExtension qtPluginExtension, String moduleType) {
@@ -85,27 +98,22 @@ class QTResourcesTask extends DefaultTask {
     qtPluginExtension[moduleType].each { String directory, LinkedHashMap<String, Serializable> dirParameters ->
       LOGGER.info("Evaluate sources at '${directory}' with '${dirParameters.includes}' includes.")
       project.fileTree(dir: directory, include: dirParameters.includes).files.each { File projectFile ->
-        String targetPath = dirParameters.flat ? dirParameters.targetPath :
-          "${dirParameters.targetPath}${File.separator}" +
-            "${project.projectDir.toPath().relativize(projectFile.parentFile.toPath())}"
-        String generatedFile = "${targetPath}${File.separator}${getTargetFileName(projectFile)}"
+        String targetPath = getTargetFilePath(projectFile, dirParameters)
+        String generatedFile = Paths.get(targetPath, getTargetFileName(projectFile))
         fileRegistry.putAll([(projectFile): generatedFile])
-
-        inputs.file(projectFile)
-        outputs.file(project.file(generatedFile))
       }
     }
+
+    addOutputs(fileRegistry)
 
     return fileRegistry
   }
 
   void processSources() {
     fileRegistry.each { File sourceFile, String targetPath ->
-      String fileName = getFileName(sourceFile)
-
       project.exec {
         commandLine compileCmd
-        args '-name', fileName, '-o', targetPath, sourceFile.path
+        args '-name', getFileName(sourceFile), '-o', targetPath, sourceFile.path
       }
     }
   }

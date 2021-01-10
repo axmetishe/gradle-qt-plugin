@@ -79,13 +79,13 @@ class QTToolchain {
       this.uicTool = Paths.get(binaries, "uic${qtToolsSuffix}")
       this.rccTool = Paths.get(binaries, "rcc${qtToolsSuffix}")
 
-      LOGGER.info("Configured sdkPath: '${}'")
-      LOGGER.info("Configured binaries: '${}'")
-      LOGGER.info("Configured includes: '${}'")
-      LOGGER.info("Configured libraries: '${}'")
-      LOGGER.info("Configured mocTool: '${}'")
-      LOGGER.info("Configured uicTool: '${}'")
-      LOGGER.info("Configured rccTool: '${}'")
+      LOGGER.info("Configured sdkPath: '${sdkPath}'")
+      LOGGER.info("Configured binaries: '${binaries}'")
+      LOGGER.info("Configured includes: '${includes}'")
+      LOGGER.info("Configured libraries: '${libraries}'")
+      LOGGER.info("Configured mocTool: '${mocTool}'")
+      LOGGER.info("Configured uicTool: '${uicTool}'")
+      LOGGER.info("Configured rccTool: '${rccTool}'")
     } else {
       throw new Exception(
         """

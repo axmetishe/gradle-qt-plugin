@@ -44,6 +44,14 @@ class QTPluginExtension {
       flat: true
     ]
   ]
+  @SuppressWarnings("GroovyAssignabilityCheck")
+  LinkedHashMap<String, LinkedHashMap<String, Serializable>> ui = [
+    'src/resources/ui': [
+      includes: '**/*.ui',
+      targetPath: "${project.buildDir}/generated-sources/ui",
+      flat: true
+    ]
+  ]
 
   List<String> modules = [
     'QtCore'

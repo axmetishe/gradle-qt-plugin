@@ -22,16 +22,13 @@
  */
 package org.platops.gradle.plugins.qt.tasks
 
-import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.CacheableTask
-import org.slf4j.LoggerFactory
 
 import javax.inject.Inject
 
 @CacheableTask
 class QTMetaObjectTask extends QTResourcesTask {
   private HashMap<File, String> fileRegistry
-  private static final Logger LOGGER = LoggerFactory.getLogger(this.simpleName) as Logger
 
   @Inject
   QTMetaObjectTask() {
