@@ -75,9 +75,12 @@ class QTToolchain {
       String qtToolsSuffix = sdkLayout.containsKey('suffix') ? sdkLayout.suffix : ''
       LOGGER.info("Tools suffix determined as '${qtToolsSuffix}'")
 
-      this.mocTool = Paths.get(binaries, "moc${qtToolsSuffix}")
-      this.uicTool = Paths.get(binaries, "uic${qtToolsSuffix}")
-      this.rccTool = Paths.get(binaries, "rcc${qtToolsSuffix}")
+      this.mocTool = sdkLayout.containsKey('moc') ? sdkLayout.moc :
+        Paths.get(binaries, "moc${qtToolsSuffix}")
+      this.uicTool = sdkLayout.containsKey('uic') ? sdkLayout.uic :
+        Paths.get(binaries, "uic${qtToolsSuffix}")
+      this.rccTool = sdkLayout.containsKey('rcc') ? sdkLayout.rcc :
+        Paths.get(binaries, "rcc${qtToolsSuffix}")
 
       LOGGER.info("Configured sdkPath: '${sdkPath}'")
       LOGGER.info("Configured binaries: '${binaries}'")
@@ -115,9 +118,14 @@ class QTToolchain {
     modules.each { String module ->
       String librarySuffix = OperatingSystem.LINUX.sharedLibrarySuffix
       Pattern libPattern = ~/(lib${module.take(2)})(\d)?(${module.drop(2)})${librarySuffix}/
-      File library = findFiles(this.libraries, libPattern).sort().first()
-      LOGGER.info("Adding '${library.name}' as library.")
-      librariesList.add(library)
+      List<File> availableLibraries = findFiles(this.libraries, libPattern)
+      if (availableLibraries) {
+        File library = findFiles(this.libraries, libPattern).sort().first()
+        if (library.exists()) {
+          LOGGER.info("Adding '${library.name}' as library.")
+          librariesList.add(library)
+        }
+      }
     }
 
     return librariesList
@@ -156,12 +164,9 @@ class QTToolchain {
     return availablePath
   }
 
-  private static String getQtBinariesSuffix(String binariesPath) {
-    LOGGER.info("Determine the actual binary name used by SDK at ${binariesPath}")
-    List<File> qtBinaries = findFiles(binariesPath, SDK_LAYOUT_PATTERNS.binaries)
-
+  private static String getQtBinariesSuffix(List<File> binaries) {
     //noinspection GroovyAssignabilityCheck
-    return ((qtBinaries.first().name =~ SDK_LAYOUT_PATTERNS.binaries)[0][2]) ?: ''
+    return ((binaries.first().name =~ SDK_LAYOUT_PATTERNS.binaries)[0][2]) ?: ''
   }
 
   private static HashMap<String, String> osQTLayout(String sdkPath) {
@@ -171,10 +176,14 @@ class QTToolchain {
       libraries: '/usr/lib64',
     ]
 
-    String qtToolsSuffix = getQtBinariesSuffix(sdkPath)
+    List<File> qtBinaries = findFiles(sdkPath, SDK_LAYOUT_PATTERNS.binaries)
+    String qtToolsSuffix = getQtBinariesSuffix(qtBinaries)
     layout.putAll([
       includes: "/usr/include/${qtToolsSuffix.replace('-', '')}",
-      suffix: qtToolsSuffix
+      suffix: qtToolsSuffix,
+      rcc: qtBinaries.find { it.name.contains('rcc') }.path,
+      moc: qtBinaries.find { it.name.contains('moc') }.path,
+      uic: qtBinaries.find { it.name.contains('uic') }.path,
     ])
 
     return layout
