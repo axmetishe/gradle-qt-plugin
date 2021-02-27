@@ -3,6 +3,10 @@
 Gradle plugin for QT build process integration with
  [native plugins](https://docs.gradle.org/current/userguide/native_software.html).
 
+## Supported platforms
+- Linux
+- MacOS
+
 ## Usage example
 ```groovy
 plugins {
@@ -35,7 +39,6 @@ qt {
 
 application {
   targetMachines = [
-    machines.windows.x86_64,
     machines.linux.x86_64,
     machines.macOS.x86_64,
   ]
