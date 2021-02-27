@@ -82,12 +82,12 @@ class QTToolchainOsX extends QTToolchain {
   }
 
   @Override
-  protected HashMap<String, String> osSpecificQTLayout(File sdkPath) {
+  protected Map<String, String> osSpecificQTLayout(File sdkPath) {
     LOGGER.info('Will try to proceed with Homebrew layout')
     this.brew = true
     File sdkRootPath = sdkPath.parentFile
 
-    HashMap<String, String> layout = [:]
+    Map<String, String> layout = [:]
     layout.putAll([
       binaries: Paths.get(sdkRootPath.path, 'bin').toString(),
       libraries: Paths.get(sdkRootPath.toPath().toRealPath().toString(), 'lib').toString(),

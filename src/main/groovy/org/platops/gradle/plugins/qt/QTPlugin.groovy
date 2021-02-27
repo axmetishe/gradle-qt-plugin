@@ -112,7 +112,7 @@ class QTPlugin implements Plugin<Project> {
           'sources',
           'ui',
         ].each { String extensionType ->
-          qtPluginExtension[extensionType].each { String directory, LinkedHashMap<String, Serializable> options ->
+          qtPluginExtension[extensionType].each { String directory, Map<String, Serializable> options ->
             cppCompileTask.source.from project.fileTree(dir: options.targetPath, exclude: '**/*.h')
             switch (extensionType) {
               case 'sources':

@@ -36,7 +36,7 @@ import java.nio.file.Paths
 
 @CacheableTask
 class QTResourcesTask extends DefaultTask {
-  private HashMap<File, String> fileRegistry
+  private Map<File, String> fileRegistry
   private static final Logger LOGGER = LoggerFactory.getLogger(this.simpleName) as Logger
 
   @Inject
@@ -53,7 +53,7 @@ class QTResourcesTask extends DefaultTask {
   public String compileCmd
 
   @Input
-  public LinkedHashMap<String, LinkedHashMap<String, Serializable>> qtSources
+  public Map<String, Map<String, Serializable>> qtSources
 
   String getCompileCmd() {
     return compileCmd
@@ -63,11 +63,11 @@ class QTResourcesTask extends DefaultTask {
     this.compileCmd = compileCmd
   }
 
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> getQtSources() {
+  Map<String, Map<String, Serializable>> getQtSources() {
     return qtSources
   }
 
-  void setQtSources(LinkedHashMap<String, LinkedHashMap<String, Serializable>> qtSources) {
+  void setQtSources(Map<String, Map<String, Serializable>> qtSources) {
     this.qtSources = qtSources
   }
 
@@ -79,23 +79,23 @@ class QTResourcesTask extends DefaultTask {
     return "qrc_${getFileName(file)}.cpp"
   }
 
-  protected String getTargetFilePath(File projectFile, LinkedHashMap<String, Serializable> dirParameters) {
+  protected String getTargetFilePath(File projectFile, Map<String, Serializable> dirParameters) {
     String relativeDir = project.projectDir.toPath().relativize(projectFile.parentFile.toPath()).toString()
     return dirParameters.flat ? dirParameters.targetPath : Paths.get(dirParameters.targetPath.toString(), relativeDir)
   }
 
-  protected void addOutputs(HashMap<File, String> fileRegistry) {
+  protected void addOutputs(Map<File, String> fileRegistry) {
     fileRegistry.each { File sourceFile, String targetPath ->
       inputs.file(sourceFile)
       outputs.file(project.file(targetPath))
     }
   }
 
-  protected HashMap<File, String> populateRegistry(QTPluginExtension qtPluginExtension, String moduleType) {
-    HashMap<File, String> fileRegistry = [:]
+  protected Map<File, String> populateRegistry(QTPluginExtension qtPluginExtension, String moduleType) {
+    Map<File, String> fileRegistry = [:]
     LOGGER.info("Populate file registry")
 
-    qtPluginExtension[moduleType].each { String directory, LinkedHashMap<String, Serializable> dirParameters ->
+    qtPluginExtension[moduleType].each { String directory, Map<String, Serializable> dirParameters ->
       LOGGER.info("Evaluate sources at '${directory}' with '${dirParameters.includes}' includes.")
       project.fileTree(dir: directory, include: dirParameters.includes).files.each { File projectFile ->
         String targetPath = getTargetFilePath(projectFile, dirParameters)

@@ -28,7 +28,7 @@ import javax.inject.Inject
 
 @CacheableTask
 class QTMetaObjectTask extends QTResourcesTask {
-  private HashMap<File, String> fileRegistry
+  private Map<File, String> fileRegistry
 
   @Inject
   QTMetaObjectTask() {

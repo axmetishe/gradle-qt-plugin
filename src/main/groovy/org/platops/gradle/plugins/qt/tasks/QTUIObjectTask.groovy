@@ -30,7 +30,7 @@ import java.nio.file.Paths
 
 @CacheableTask
 class QTUIObjectTask extends QTResourcesTask {
-  private HashMap<File, String> fileRegistry
+  private Map<File, String> fileRegistry
 
   @Inject
   QTUIObjectTask() {
@@ -70,7 +70,7 @@ class QTUIObjectTask extends QTResourcesTask {
   }
 
   @Override
-  void addOutputs(HashMap<File, String> fileRegistry) {
+  void addOutputs(Map<File, String> fileRegistry) {
     fileRegistry.each { File sourceFile, String targetFile ->
       inputs.file(sourceFile)
       outputs.file(project.file(getHeaderTargetPath(sourceFile, targetFile)))

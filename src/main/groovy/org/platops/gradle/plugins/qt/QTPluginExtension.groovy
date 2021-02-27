@@ -29,7 +29,7 @@ class QTPluginExtension {
   protected Project project
 
   @SuppressWarnings("GroovyAssignabilityCheck")
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> resources = [
+  Map<String, Map<String, Serializable>> resources = [
     'src/main/resources': [
       includes: '*.qrc',
       targetPath: "${project.buildDir}/generated-sources",
@@ -37,7 +37,7 @@ class QTPluginExtension {
     ]
   ]
   @SuppressWarnings("GroovyAssignabilityCheck")
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> sources = [
+  Map<String, Map<String, Serializable>> sources = [
     'src/main/meta-headers': [
       includes: '**/*.h',
       targetPath: "${project.buildDir}/generated-sources/sources",
@@ -45,7 +45,7 @@ class QTPluginExtension {
     ]
   ]
   @SuppressWarnings("GroovyAssignabilityCheck")
-  LinkedHashMap<String, LinkedHashMap<String, Serializable>> ui = [
+  Map<String, Map<String, Serializable>> ui = [
     'src/resources/ui': [
       includes: '**/*.ui',
       targetPath: "${project.buildDir}/generated-sources/ui",

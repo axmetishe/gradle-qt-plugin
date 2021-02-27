@@ -32,10 +32,10 @@ class QTToolchainLinux extends QTToolchain {
   }
 
   @Override
-  protected HashMap<String, String> initializeSDK(File sdkProposedPath) {
+  protected Map<String, String> initializeSDK(File sdkProposedPath) {
     LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
     this.sdkPath = sdkProposedPath
-    HashMap<String, String> sdkLayout = (sdkProposedPath.path in DEFAULT_BINARY_PATH)
+    Map<String, String> sdkLayout = (sdkProposedPath.path in DEFAULT_BINARY_PATH)
       ? osSpecificQTLayout(sdkProposedPath)
       : produceDefaultQTLayout(sdkProposedPath)
 

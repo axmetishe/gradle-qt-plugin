@@ -47,7 +47,7 @@ abstract class QTToolchain {
   protected static final Logger LOGGER = LoggerFactory.getLogger(this.simpleName) as Logger
 
   protected static final String SDK_PATH_VARIABLE = 'QT_PATH'
-  protected static final HashMap<String, Pattern> SDK_LAYOUT_PATTERNS = [
+  protected static final Map<String, Pattern> SDK_LAYOUT_PATTERNS = [
     binaries : ~/(moc|rcc|uic)?(-qt\d|\.exe)?/,
     includes : ~/((Qt)(\w)+)/,
     libraries: ~/((lib)?(Qt)(\w)+(\.)(lib|so|a))/,
@@ -95,7 +95,7 @@ abstract class QTToolchain {
   protected configureToolchain() {
     File sdkProposedPath = new File(determineAvailableSDKPath())
     if (sdkProposedPath.exists()) {
-      HashMap<String, String> sdkLayout = initializeSDK(sdkProposedPath)
+      Map<String, String> sdkLayout = initializeSDK(sdkProposedPath)
 
       this.binaries = sdkLayout.binaries
       this.libraries = sdkLayout.libraries
@@ -132,10 +132,10 @@ abstract class QTToolchain {
     }
   }
 
-  protected HashMap<String, String> initializeSDK(File sdkProposedPath) {
+  protected Map<String, String> initializeSDK(File sdkProposedPath) {
     LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
     this.sdkPath = sdkProposedPath
-    HashMap<String, String> sdkLayout = new File("${sdkProposedPath.toPath().toRealPath().parent}/.brew/").exists() ?
+    Map<String, String> sdkLayout = new File("${sdkProposedPath.toPath().toRealPath().parent}/.brew/").exists() ?
       osSpecificQTLayout(sdkProposedPath) :
       produceDefaultQTLayout(sdkProposedPath)
 
@@ -182,9 +182,9 @@ abstract class QTToolchain {
     return ((binaries.first().name =~ SDK_LAYOUT_PATTERNS.binaries)[0][2]) ?: ''
   }
 
-  protected HashMap<String, String> osSpecificQTLayout(File sdkPath) {
+  protected Map<String, String> osSpecificQTLayout(File sdkPath) {
     LOGGER.info("Will try to proceed with default OS layout")
-    HashMap<String, String> layout = [
+    Map<String, String> layout = [
       binaries: sdkPath.path,
       libraries: '/usr/lib64',
     ]
@@ -196,7 +196,7 @@ abstract class QTToolchain {
     return layout
   }
 
-  protected static HashMap<String, String> getQTBinaries(String sdkPath, Pattern binariesPattern) {
+  protected static Map<String, String> getQTBinaries(String sdkPath, Pattern binariesPattern) {
     List<File> qtBinaries = findFiles(sdkPath, binariesPattern)
     String qtToolsSuffix = getQtBinariesSuffix(qtBinaries)
 
@@ -208,12 +208,12 @@ abstract class QTToolchain {
     ]
   }
 
-  protected static HashMap<String, String> produceDefaultQTLayout(String sdkPath) {
+  protected static Map<String, String> produceDefaultQTLayout(String sdkPath) {
     return produceDefaultQTLayout(new File(sdkPath))
   }
 
-  protected static HashMap<String, String> produceDefaultQTLayout(File sdkPath) {
-    HashMap<String, String> layout = [:]
+  protected static Map<String, String> produceDefaultQTLayout(File sdkPath) {
+    Map<String, String> layout = [:]
     String sdkToolchainPrefix
     LOGGER.info("Will try to proceed with default QT layout")
 
@@ -281,7 +281,7 @@ abstract class QTToolchain {
     return findDirectories(new File(searchDir), pattern)
   }
 
-  protected static void validateSDKConfiguration(HashMap<String, String> sdkLayout) {
+  protected static void validateSDKConfiguration(Map<String, String> sdkLayout) {
     LOGGER.info("Validate configured SDK layout")
     [
       'binaries',
