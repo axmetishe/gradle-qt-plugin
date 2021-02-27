@@ -25,12 +25,15 @@ package org.platops.gradle.plugins.qt
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.cpp.tasks.CppCompile
 import org.gradle.nativeplatform.tasks.AbstractLinkTask
 import org.platops.gradle.plugins.qt.tasks.QTMetaObjectTask
 import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
 import org.platops.gradle.plugins.qt.tasks.QTUIObjectTask
 import org.platops.gradle.plugins.qt.toolchains.QTToolchain
+import org.platops.gradle.plugins.qt.toolchains.QTToolchainLinux
+import org.platops.gradle.plugins.qt.toolchains.QTToolchainOsX
 import org.slf4j.LoggerFactory
 
 class QTPlugin implements Plugin<Project> {
@@ -47,7 +50,16 @@ class QTPlugin implements Plugin<Project> {
 
   private static void configure(Project project, QTPluginExtension qtPluginExtension) {
     LOGGER.info("${this.simpleName} configuration stage")
-    QTToolchain qtToolchain = new QTToolchain(qtPluginExtension)
+    QTToolchain qtToolchain
+
+    switch (OperatingSystem.current()) {
+      case OperatingSystem.MAC_OS:
+        qtToolchain = new QTToolchainOsX(qtPluginExtension)
+        break
+      default:
+        qtToolchain = new QTToolchainLinux(qtPluginExtension)
+        break
+    }
 
     LOGGER.info("Register ${QTResourcesTask.simpleName}")
     project.tasks.register("${TASK_PREFIX}Resources", QTResourcesTask) {
@@ -80,6 +92,8 @@ class QTPlugin implements Plugin<Project> {
       cppCompileTask.dependsOn(project.tasks.withType(QTUIObjectTask))
       LOGGER.info("'${cppCompileTask.name}' is now depends on '${TASK_PREFIX}UI'")
 
+      LOGGER.info('Add platform-specific compiler args')
+      cppCompileTask.compilerArgs.addAll(qtToolchain.compilerArgs)
       LOGGER.info("Update include paths for compile tasks")
       cppCompileTask.includes.from qtToolchain.includes
 
@@ -118,6 +132,9 @@ class QTPlugin implements Plugin<Project> {
       if (linkTask.name.contains('Test')) {
         includeLibraries.add('QtTest')
       }
+
+      LOGGER.info('Add platform-specific linker args')
+      linkTask.linkerArgs.addAll(qtToolchain.linkerArgs)
 
       qtToolchain.processQTModulesLibraries(includeLibraries).each { File includeLibrary ->
         linkTask.libs.from includeLibrary.path

@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-class QTToolchain {
+abstract class QTToolchain {
   String sdkPath
   String binaries
   String includes
@@ -38,39 +38,70 @@ class QTToolchain {
   String mocTool
   String uicTool
   String rccTool
+  Boolean brew = false
+  List<String> compilerArgs = []
+  List<String> linkerArgs = []
 
   protected QTPluginExtension qtPluginExtension
-  protected OperatingSystem operatingSystem
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(this.simpleName) as Logger
+  protected static final Logger LOGGER = LoggerFactory.getLogger(this.simpleName) as Logger
 
-  private static final String SDK_PATH_VARIABLE = 'QT_PATH'
-  private static final HashMap<String, Pattern> SDK_LAYOUT_PATTERNS = [
+  protected static final String SDK_PATH_VARIABLE = 'QT_PATH'
+  protected static final HashMap<String, Pattern> SDK_LAYOUT_PATTERNS = [
     binaries : ~/(moc|rcc|uic)?(-qt\d|\.exe)?/,
     includes : ~/((Qt)(\w)+)/,
     libraries: ~/((lib)?(Qt)(\w)+(\.)(lib|so|a))/,
-    versions: ~/((\d)(\.)?)+/
+    versions: ~/((\d)(\.)?)+/,
+    toolchains: ~/(\w+_\d+)/
   ]
-  private static final String SDK_TOOLCHAIN_PREFIX = 'gcc_64'
-  private static final List<String> DEFAULT_BINARY_PATH = ['/usr/bin', '/bin']
+  protected static final String SDK_TOOLCHAIN_PREFIX = 'gcc_64'
 
   QTToolchain(QTPluginExtension qtPluginExtension) {
     this.qtPluginExtension = qtPluginExtension
-    this.operatingSystem = OperatingSystem.current()
 
-    String sdkProposedPath = determineAvailableSDKPath()
+    configureToolchain()
+  }
 
-    if (sdkProposedPath) {
-      LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}' ")
-      this.sdkPath = sdkProposedPath
+  List<File> processQTModulesIncludes(List<String> modules) {
+    List<File> includeList = []
+    modules.each { String module ->
+      findDirectories(this.includes, ~/(${module}.*)/).each { File moduleInclude ->
+        LOGGER.info("Adding '${moduleInclude.path}' as include directory.")
+        includeList.add(moduleInclude)
+      }
+    }
 
-      HashMap<String, String> sdkLayout = (sdkProposedPath in DEFAULT_BINARY_PATH) ?
-        osQTLayout(sdkProposedPath) :
-        produceDefaultQTLayout(sdkProposedPath)
+    return includeList
+  }
+
+  List<File> processQTModulesLibraries(List<String> modules, Boolean debuggable = true) {
+    List<File> librariesList = []
+    modules.each { String module ->
+      String librarySuffix = OperatingSystem.LINUX.sharedLibrarySuffix
+      Pattern libPattern = ~/(lib${module.take(2)})(\d)?(${module.drop(2)})${librarySuffix}/
+      List<File> availableLibraries = findFiles(this.libraries, libPattern)
+      if (availableLibraries) {
+        File library = findFiles(this.libraries, libPattern).sort().first()
+        if (library.exists()) {
+          LOGGER.info("Adding '${library.name}' as library.")
+          librariesList.add(library)
+        }
+      }
+    }
+
+    return librariesList
+  }
+
+  protected configureToolchain() {
+    File sdkProposedPath = new File(determineAvailableSDKPath())
+    if (sdkProposedPath.exists()) {
+      HashMap<String, String> sdkLayout = initializeSDK(sdkProposedPath)
 
       this.binaries = sdkLayout.binaries
       this.libraries = sdkLayout.libraries
       this.includes = sdkLayout.includes
+
+      platformSpecificArgs()
 
       String qtToolsSuffix = sdkLayout.containsKey('suffix') ? sdkLayout.suffix : ''
       LOGGER.info("Tools suffix determined as '${qtToolsSuffix}'")
@@ -101,37 +132,19 @@ class QTToolchain {
     }
   }
 
-  List<File> processQTModulesIncludes(List<String> modules) {
-    List<File> includeList = []
-    modules.each { String module ->
-      findDirectories(this.includes, ~/(${module}.*)/).each { File moduleInclude ->
-        LOGGER.info("Adding '${moduleInclude.path}' as include directory.")
-        includeList.add(moduleInclude)
-      }
-    }
+  protected HashMap<String, String> initializeSDK(File sdkProposedPath) {
+    LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
+    this.sdkPath = sdkProposedPath
+    HashMap<String, String> sdkLayout = new File("${sdkProposedPath.toPath().toRealPath().parent}/.brew/").exists() ?
+      osSpecificQTLayout(sdkProposedPath) :
+      produceDefaultQTLayout(sdkProposedPath)
 
-    return includeList
+    return sdkLayout
   }
 
-  List<File> processQTModulesLibraries(List<String> modules) {
-    List<File> librariesList = []
-    modules.each { String module ->
-      String librarySuffix = OperatingSystem.LINUX.sharedLibrarySuffix
-      Pattern libPattern = ~/(lib${module.take(2)})(\d)?(${module.drop(2)})${librarySuffix}/
-      List<File> availableLibraries = findFiles(this.libraries, libPattern)
-      if (availableLibraries) {
-        File library = findFiles(this.libraries, libPattern).sort().first()
-        if (library.exists()) {
-          LOGGER.info("Adding '${library.name}' as library.")
-          librariesList.add(library)
-        }
-      }
-    }
+  protected void platformSpecificArgs() {}
 
-    return librariesList
-  }
-
-  private static String determineAvailableSDKPath() {
+  protected static String determineAvailableSDKPath() {
     String availablePath = ''
     String configuredSDKPath = System.getenv(SDK_PATH_VARIABLE) ?: null
 
@@ -164,80 +177,112 @@ class QTToolchain {
     return availablePath
   }
 
-  private static String getQtBinariesSuffix(List<File> binaries) {
+  protected static String getQtBinariesSuffix(List<File> binaries) {
     //noinspection GroovyAssignabilityCheck
     return ((binaries.first().name =~ SDK_LAYOUT_PATTERNS.binaries)[0][2]) ?: ''
   }
 
-  private static HashMap<String, String> osQTLayout(String sdkPath) {
+  protected HashMap<String, String> osSpecificQTLayout(File sdkPath) {
     LOGGER.info("Will try to proceed with default OS layout")
     HashMap<String, String> layout = [
-      binaries: sdkPath,
+      binaries: sdkPath.path,
       libraries: '/usr/lib64',
     ]
+    layout.putAll(getQTBinaries(sdkPath.path, SDK_LAYOUT_PATTERNS.binaries))
+    layout.put('includes', "/usr/include/${layout.suffix.replace('-', '')}")
 
-    List<File> qtBinaries = findFiles(sdkPath, SDK_LAYOUT_PATTERNS.binaries)
-    String qtToolsSuffix = getQtBinariesSuffix(qtBinaries)
-    layout.putAll([
-      includes: "/usr/include/${qtToolsSuffix.replace('-', '')}",
-      suffix: qtToolsSuffix,
-      rcc: qtBinaries.find { it.name.contains('rcc') }.path,
-      moc: qtBinaries.find { it.name.contains('moc') }.path,
-      uic: qtBinaries.find { it.name.contains('uic') }.path,
-    ])
+    validateSDKConfiguration(layout)
 
     return layout
   }
 
-  private static HashMap<String, String> produceDefaultQTLayout(String sdkPath) {
+  protected static HashMap<String, String> getQTBinaries(String sdkPath, Pattern binariesPattern) {
+    List<File> qtBinaries = findFiles(sdkPath, binariesPattern)
+    String qtToolsSuffix = getQtBinariesSuffix(qtBinaries)
+
+    return [
+      rcc: qtBinaries.find { it.name.contains('rcc') }.path,
+      moc: qtBinaries.find { it.name.contains('moc') }.path,
+      uic: qtBinaries.find { it.name.contains('uic') }.path,
+      suffix: qtToolsSuffix
+    ]
+  }
+
+  protected static HashMap<String, String> produceDefaultQTLayout(String sdkPath) {
+    return produceDefaultQTLayout(new File(sdkPath))
+  }
+
+  protected static HashMap<String, String> produceDefaultQTLayout(File sdkPath) {
     HashMap<String, String> layout = [:]
-    LOGGER.info("Will try to proceed with QT layout")
-    List<File> sdkVersionDirs = findDirectories(new File(sdkPath), SDK_LAYOUT_PATTERNS.versions).sort()
+    String sdkToolchainPrefix
+    LOGGER.info("Will try to proceed with default QT layout")
+
+    File toolchainDir = sdkPath.parentFile
+    String toolchainPrefix = toolchainDir.name.matches(SDK_LAYOUT_PATTERNS.toolchains)
+      ? toolchainDir.name
+      : SDK_TOOLCHAIN_PREFIX
+    LOGGER.info("Referenced toolchain determined as '${toolchainPrefix}'")
+
+    File sdkRootPath = toolchainDir.parentFile.parentFile
+    LOGGER.info("QT SDK root path at '${sdkRootPath.path}'")
+
+    LOGGER.info("Attempt to find available toolchain versions")
+    List<File> sdkVersionDirs = findDirectories(sdkRootPath, SDK_LAYOUT_PATTERNS.versions).sort()
     if (sdkVersionDirs) {
       sdkVersionDirs.forEach { LOGGER.info("Found '${it.name}' at '${it.path}'") }
       File newestSDKDir = sdkVersionDirs.last()
       LOGGER.info("We will take the newest available: '${newestSDKDir.name}'")
+      if (!new File("${newestSDKDir.path}/${toolchainPrefix}").exists()) {
+        LOGGER.info("Referenced toolchain '${toolchainPrefix}' is not available for '${newestSDKDir.name}'")
+        List<File> sdkToolchains = findDirectories(newestSDKDir, SDK_LAYOUT_PATTERNS.toolchains)
+        LOGGER.info("Found toolchains at '${newestSDKDir.name}' - '${sdkToolchains.join(', ')}'")
+        LOGGER.info("We will use the first available - '${sdkToolchains.first().name}'")
+        toolchainPrefix = sdkToolchains.first().name
+      } else {
+        LOGGER.info("Referenced toolchain '${toolchainPrefix}' is available for '${newestSDKDir.name}'")
+      }
 
-      String sdkToolchainPrefix = Paths.get(newestSDKDir.path, SDK_TOOLCHAIN_PREFIX)
-      layout.putAll([
-        binaries: Paths.get(sdkToolchainPrefix, 'bin').toString(),
-        libraries: Paths.get(sdkToolchainPrefix, 'lib').toString(),
-        includes: Paths.get(sdkToolchainPrefix, 'include').toString(),
-      ])
+      sdkToolchainPrefix = Paths.get(newestSDKDir.path, toolchainPrefix)
     } else {
-      throw new Exception("Incorrect SDK layout found at '${sdkPath}'")
+      LOGGER.warn("Incorrect SDK layout found at '${sdkRootPath}', we will try to use it anyway.")
+      sdkToolchainPrefix = toolchainDir
     }
+
+    layout.putAll([
+      binaries: Paths.get(sdkToolchainPrefix, 'bin').toString(),
+      libraries: Paths.get(sdkToolchainPrefix, 'lib').toString(),
+      includes: Paths.get(sdkToolchainPrefix, 'include').toString(),
+      sdkPath: sdkPath.path
+    ])
+    layout.putAll(getQTBinaries(sdkPath.path, SDK_LAYOUT_PATTERNS.binaries))
+
+    validateSDKConfiguration(layout)
 
     return layout
   }
 
-  private static List<String> getBinaryPathFromEnvVariable(Pattern binaryPattern) {
-    List<String> binaryPathString = System.getenv('PATH')
-      .split(Pattern.quote(File.pathSeparator))
-      .findAll { String searchPath ->
-        findFiles(searchPath, binaryPattern)
-      }
-
-    return binaryPathString
-  }
-
-  private static List<File> findFiles(File searchDir, Pattern pattern) {
+  protected static List<File> findFiles(File searchDir, Pattern pattern) {
     return searchDir.listFiles().findAll { it.name.matches(pattern) }
   }
 
-  private static List<File> findFiles(String searchDir, Pattern pattern) {
+  protected static List<File> findFiles(File searchDir, String pattern) {
+    return findFiles(searchDir, Pattern.compile(pattern))
+  }
+
+  protected static List<File> findFiles(String searchDir, Pattern pattern) {
     return findFiles(new File(searchDir), pattern)
   }
 
-  private static List<File> findDirectories(File searchDir, Pattern pattern) {
+  protected static List<File> findDirectories(File searchDir, Pattern pattern) {
     return findFiles(searchDir, pattern).findAll { it.directory }
   }
 
-  private static List<File> findDirectories(String searchDir, Pattern pattern) {
+  protected static List<File> findDirectories(String searchDir, Pattern pattern) {
     return findDirectories(new File(searchDir), pattern)
   }
 
-  private static void validateSDKConfiguration(HashMap<String, String> sdkLayout) {
+  protected static void validateSDKConfiguration(HashMap<String, String> sdkLayout) {
+    LOGGER.info("Validate configured SDK layout")
     [
       'binaries',
       'includes',
@@ -255,5 +300,15 @@ class QTToolchain {
         )
       }
     }
+  }
+
+  private static List<String> getBinaryPathFromEnvVariable(Pattern binaryPattern) {
+    List<String> binaryPathString = System.getenv('PATH')
+      .split(Pattern.quote(File.pathSeparator))
+      .findAll { String searchPath ->
+        findFiles(searchPath, binaryPattern)
+      }
+
+    return binaryPathString
   }
 }
