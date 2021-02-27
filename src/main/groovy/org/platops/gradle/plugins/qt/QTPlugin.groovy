@@ -53,12 +53,19 @@ class QTPlugin implements Plugin<Project> {
     QTToolchain qtToolchain
 
     switch (OperatingSystem.current()) {
+      case OperatingSystem.LINUX:
+        qtToolchain = new QTToolchainLinux(qtPluginExtension)
+        break
       case OperatingSystem.MAC_OS:
         qtToolchain = new QTToolchainOsX(qtPluginExtension)
         break
       default:
-        qtToolchain = new QTToolchainLinux(qtPluginExtension)
-        break
+        throw new UnsupportedOperationException(
+          """
+            Unsupported host operating system - '${OperatingSystem.current().name}'.
+            Please check README.md #Supported platforms section
+          """.stripIndent()
+        )
     }
 
     LOGGER.info("Register ${QTResourcesTask.simpleName}")
