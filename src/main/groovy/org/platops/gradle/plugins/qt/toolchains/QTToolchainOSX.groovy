@@ -27,8 +27,8 @@ import org.platops.gradle.plugins.qt.QTPluginExtension
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-class QTToolchainOsX extends QTToolchain {
-  QTToolchainOsX(QTPluginExtension qtPluginExtension) {
+class QTToolchainOSX extends QTToolchain {
+  QTToolchainOSX(QTPluginExtension qtPluginExtension) {
     super(qtPluginExtension)
   }
 

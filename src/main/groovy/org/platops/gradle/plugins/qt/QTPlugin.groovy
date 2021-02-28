@@ -33,7 +33,7 @@ import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
 import org.platops.gradle.plugins.qt.tasks.QTUIObjectTask
 import org.platops.gradle.plugins.qt.toolchains.QTToolchain
 import org.platops.gradle.plugins.qt.toolchains.QTToolchainLinux
-import org.platops.gradle.plugins.qt.toolchains.QTToolchainOsX
+import org.platops.gradle.plugins.qt.toolchains.QTToolchainOSX
 import org.slf4j.LoggerFactory
 
 class QTPlugin implements Plugin<Project> {
@@ -57,7 +57,7 @@ class QTPlugin implements Plugin<Project> {
         qtToolchain = new QTToolchainLinux(qtPluginExtension)
         break
       case OperatingSystem.MAC_OS:
-        qtToolchain = new QTToolchainOsX(qtPluginExtension)
+        qtToolchain = new QTToolchainOSX(qtPluginExtension)
         break
       default:
         throw new UnsupportedOperationException(
