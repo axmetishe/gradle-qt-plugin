@@ -55,6 +55,7 @@ abstract class QTToolchain {
     toolchains: ~/(\w+_\d+)/
   ]
   protected static final String SDK_TOOLCHAIN_PREFIX = 'gcc_64'
+  protected static final List<String> DEFAULT_BINARY_PATH = ['/usr/bin', '/bin']
 
   QTToolchain(QTPluginExtension qtPluginExtension) {
     this.qtPluginExtension = qtPluginExtension
@@ -135,9 +136,9 @@ abstract class QTToolchain {
   protected Map<String, String> initializeSDK(File sdkProposedPath) {
     LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
     this.sdkPath = sdkProposedPath
-    Map<String, String> sdkLayout = new File("${sdkProposedPath.toPath().toRealPath().parent}/.brew/").exists() ?
-      osSpecificQTLayout(sdkProposedPath) :
-      produceDefaultQTLayout(sdkProposedPath)
+    Map<String, String> sdkLayout = (sdkProposedPath.path in DEFAULT_BINARY_PATH)
+      ? osSpecificQTLayout(sdkProposedPath)
+      : produceDefaultQTLayout(sdkProposedPath)
 
     return sdkLayout
   }

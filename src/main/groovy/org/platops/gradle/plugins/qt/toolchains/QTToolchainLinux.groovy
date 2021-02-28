@@ -25,20 +25,7 @@ package org.platops.gradle.plugins.qt.toolchains
 import org.platops.gradle.plugins.qt.QTPluginExtension
 
 class QTToolchainLinux extends QTToolchain {
-  private static final List<String> DEFAULT_BINARY_PATH = ['/usr/bin', '/bin']
-
   QTToolchainLinux(QTPluginExtension qtPluginExtension) {
     super(qtPluginExtension)
-  }
-
-  @Override
-  protected Map<String, String> initializeSDK(File sdkProposedPath) {
-    LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
-    this.sdkPath = sdkProposedPath
-    Map<String, String> sdkLayout = (sdkProposedPath.path in DEFAULT_BINARY_PATH)
-      ? osSpecificQTLayout(sdkProposedPath)
-      : produceDefaultQTLayout(sdkProposedPath)
-
-    return sdkLayout
   }
 }

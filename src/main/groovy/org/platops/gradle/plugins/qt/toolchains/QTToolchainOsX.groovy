@@ -82,6 +82,17 @@ class QTToolchainOsX extends QTToolchain {
   }
 
   @Override
+  protected Map<String, String> initializeSDK(File sdkProposedPath) {
+    LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
+    this.sdkPath = sdkProposedPath
+    Map<String, String> sdkLayout = new File("${sdkProposedPath.toPath().toRealPath().parent}/.brew/").exists() ?
+      osSpecificQTLayout(sdkProposedPath) :
+      produceDefaultQTLayout(sdkProposedPath)
+
+    return sdkLayout
+  }
+
+  @Override
   protected Map<String, String> osSpecificQTLayout(File sdkPath) {
     LOGGER.info('Will try to proceed with Homebrew layout')
     this.brew = true
