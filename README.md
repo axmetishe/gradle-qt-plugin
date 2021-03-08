@@ -3,6 +3,7 @@
 Gradle plugin for QT build process integration with
  [native plugins](https://docs.gradle.org/current/userguide/native_software.html).
 
+[![Build Status](https://travis-ci.com/axmetishe/gradle-qt-plugin.svg?branch=master)](https://travis-ci.com/axmetishe/gradle-qt-plugin)
 ## Supported platforms
 - Linux
 - MacOS
@@ -53,20 +54,28 @@ application {
     AbstractLinkTask linkTask = cppBinary.linkTask.get()
 
     compileTask.positionIndependentCode = true
+
     if (compileTask.targetPlatform.get().operatingSystem.isMacOsX()) {
       compileTask.compilerArgs.add('-std=gnu++11')
     }
-    if (name.toLowerCase().contains('debug')) {
+    if (compileTask.targetPlatform.get().operatingSystem.isWindows()) {
+      compileTask.compilerArgs.add("/MD${compileTask.name.toLowerCase().contains('debug') ? 'd' : ''}")
+      linkTask.linkerArgs.add("msvcrt${linkTask.name.toLowerCase().contains('debug') ? 'd' : ''}.lib")
+      linkTask.linkerArgs.addAll(['ole32.lib', 'user32.lib'])
+      linkTask.linkerArgs.addAll(['/SUBSYSTEM:windows', '/ENTRY:mainCRTStartup'])
+    }
+
+    if (compileTask.name.toLowerCase().contains('debug')) {
       compileTask.macros.put('_DEBUG', null)
       compileTask.optimized = false
       compileTask.debuggable = true
-      linkTask.debuggable = true
     } else {
       compileTask.macros.put('NDEBUG', null)
       compileTask.optimized = true
       compileTask.debuggable = false
-      linkTask.debuggable = false
     }
+
+    linkTask.debuggable = linkTask.name.toLowerCase().contains('debug')
   }
 }
 ```
