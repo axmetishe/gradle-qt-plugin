@@ -11,4 +11,4 @@ addons:
 
 script:
   - ./gradlew build
-  - ./gradlew sonarqube
+  - ./gradlew sonarqube -Dsonar.login=$SONARQUBE_TOKEN
