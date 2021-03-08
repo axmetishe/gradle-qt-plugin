@@ -2,5 +2,13 @@ os: linux
 language: java
 install: skip
 jdk: openjdk11
+
+addons:
+  sonarcloud:
+    organization: $SONARQUBE_ORG
+    token:
+      secure: $SONARQUBE_TOKEN
+
 script:
   - ./gradlew build
+  - ./gradlew sonarqube
