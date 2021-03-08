@@ -75,7 +75,7 @@ abstract class QTToolchain {
     return includeList
   }
 
-  List<File> processQTModulesLibraries(List<String> modules, Boolean debuggable = true) {
+  List<File> processQTModulesLibraries(List<String> modules, Boolean debuggable = false) {
     List<File> librariesList = []
     modules.each { String module ->
       String librarySuffix = OperatingSystem.LINUX.sharedLibrarySuffix

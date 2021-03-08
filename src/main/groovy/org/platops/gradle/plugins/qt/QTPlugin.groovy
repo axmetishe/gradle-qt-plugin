@@ -34,6 +34,7 @@ import org.platops.gradle.plugins.qt.tasks.QTUIObjectTask
 import org.platops.gradle.plugins.qt.toolchains.QTToolchain
 import org.platops.gradle.plugins.qt.toolchains.QTToolchainLinux
 import org.platops.gradle.plugins.qt.toolchains.QTToolchainOSX
+import org.platops.gradle.plugins.qt.toolchains.QTToolchainWindows
 import org.slf4j.LoggerFactory
 
 class QTPlugin implements Plugin<Project> {
@@ -58,6 +59,9 @@ class QTPlugin implements Plugin<Project> {
         break
       case OperatingSystem.MAC_OS:
         qtToolchain = new QTToolchainOSX(qtPluginExtension)
+        break
+      case OperatingSystem.WINDOWS:
+        qtToolchain = new QTToolchainWindows(qtPluginExtension)
         break
       default:
         throw new UnsupportedOperationException(
@@ -143,7 +147,9 @@ class QTPlugin implements Plugin<Project> {
       LOGGER.info('Add platform-specific linker args')
       linkTask.linkerArgs.addAll(qtToolchain.linkerArgs)
 
-      qtToolchain.processQTModulesLibraries(includeLibraries).each { File includeLibrary ->
+      qtToolchain.processQTModulesLibraries(includeLibraries,
+        linkTask.name.toLowerCase().contains('debug')).each { File includeLibrary ->
+
         linkTask.libs.from includeLibrary.path
       }
     }
