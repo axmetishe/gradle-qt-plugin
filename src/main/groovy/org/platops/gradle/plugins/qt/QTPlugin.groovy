@@ -25,16 +25,13 @@ package org.platops.gradle.plugins.qt
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
-import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.cpp.tasks.CppCompile
 import org.gradle.nativeplatform.tasks.AbstractLinkTask
-import org.platops.gradle.plugins.qt.tasks.QTMetaObjectTask
-import org.platops.gradle.plugins.qt.tasks.QTResourcesTask
-import org.platops.gradle.plugins.qt.tasks.QTUIObjectTask
-import org.platops.gradle.plugins.qt.toolchains.QTToolchain
-import org.platops.gradle.plugins.qt.toolchains.QTToolchainLinux
-import org.platops.gradle.plugins.qt.toolchains.QTToolchainOSX
-import org.platops.gradle.plugins.qt.toolchains.QTToolchainWindows
+import org.platops.gradle.plugins.qt.internal.QTToolchainFactory
+import org.platops.gradle.plugins.qt.internal.tasks.QTMetaObjectTask
+import org.platops.gradle.plugins.qt.internal.tasks.QTResourcesTask
+import org.platops.gradle.plugins.qt.internal.tasks.QTUIObjectTask
+import org.platops.gradle.plugins.qt.internal.toolchains.QTToolchain
 import org.slf4j.LoggerFactory
 
 class QTPlugin implements Plugin<Project> {
@@ -51,26 +48,7 @@ class QTPlugin implements Plugin<Project> {
 
   private static void configure(Project project, QTPluginExtension qtPluginExtension) {
     LOGGER.info("${this.simpleName} configuration stage")
-    QTToolchain qtToolchain
-
-    switch (OperatingSystem.current()) {
-      case OperatingSystem.LINUX:
-        qtToolchain = new QTToolchainLinux(qtPluginExtension)
-        break
-      case OperatingSystem.MAC_OS:
-        qtToolchain = new QTToolchainOSX(qtPluginExtension)
-        break
-      case OperatingSystem.WINDOWS:
-        qtToolchain = new QTToolchainWindows(qtPluginExtension)
-        break
-      default:
-        throw new UnsupportedOperationException(
-          """
-            Unsupported host operating system - '${OperatingSystem.current().name}'.
-            Please check README.md #Supported platforms section
-          """.stripIndent()
-        )
-    }
+    QTToolchain qtToolchain = QTToolchainFactory.initializeToolchain(qtPluginExtension)
 
     LOGGER.info("Register ${QTResourcesTask.simpleName}")
     project.tasks.register("${TASK_PREFIX}Resources", QTResourcesTask) {

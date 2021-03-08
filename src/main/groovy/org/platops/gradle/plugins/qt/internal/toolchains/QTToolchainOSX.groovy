@@ -20,7 +20,7 @@
  *
  *  ==============================================================
  */
-package org.platops.gradle.plugins.qt.toolchains
+package org.platops.gradle.plugins.qt.internal.toolchains
 
 import org.platops.gradle.plugins.qt.QTPluginExtension
 

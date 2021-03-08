@@ -6,6 +6,7 @@ Gradle plugin for QT build process integration with
 ## Supported platforms
 - Linux
 - MacOS
+- Windows
 
 ## Usage example
 ```groovy
@@ -41,6 +42,7 @@ application {
   targetMachines = [
     machines.linux.x86_64,
     machines.macOS.x86_64,
+    machines.windows.x86_64,
   ]
 
   source.from file('src/main/cpp')

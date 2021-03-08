@@ -20,7 +20,7 @@
  *
  *  ==============================================================
  */
-package org.platops.gradle.plugins.qt.tasks
+package org.platops.gradle.plugins.qt.internal.tasks
 
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input

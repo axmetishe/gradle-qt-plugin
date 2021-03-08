@@ -20,12 +20,33 @@
  *
  *  ==============================================================
  */
-package org.platops.gradle.plugins.qt.toolchains
+package org.platops.gradle.plugins.qt.internal.tasks
 
-import org.platops.gradle.plugins.qt.QTPluginExtension
+import org.gradle.api.tasks.CacheableTask
 
-class QTToolchainLinux extends QTToolchain {
-  QTToolchainLinux(QTPluginExtension qtPluginExtension) {
-    super(qtPluginExtension)
+import javax.inject.Inject
+
+@CacheableTask
+class QTMetaObjectTask extends QTResourcesTask {
+  private Map<File, String> fileRegistry
+
+  @Inject
+  QTMetaObjectTask() {
+    this.fileRegistry = populateRegistry(extension, 'sources')
+  }
+
+  @Override
+  String getTargetFileName(File projectFile) {
+    return "moc_${getFileName(projectFile)}.cpp"
+  }
+
+  @Override
+  void processSources() {
+    fileRegistry.each { File sourceFile, String targetPath ->
+      project.exec {
+        commandLine compileCmd
+        args '-o', targetPath, sourceFile.path
+      }
+    }
   }
 }
