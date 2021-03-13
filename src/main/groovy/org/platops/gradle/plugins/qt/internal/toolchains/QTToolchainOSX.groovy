@@ -100,15 +100,24 @@ class QTToolchainOSX extends QTToolchain {
 
     Map<String, String> layout = [:]
     layout.putAll([
-      binaries: Paths.get(sdkRootPath.path, 'bin').toString(),
+      binaries : Paths.get(sdkRootPath.path, 'bin').toString(),
       libraries: Paths.get(sdkRootPath.toPath().toRealPath().toString(), 'lib').toString(),
-      includes: Paths.get(sdkRootPath.path, 'include').toString(),
-      sdkPath: sdkPath.path
+      includes : Paths.get(sdkRootPath.path, 'include').toString(),
+      sdkPath  : sdkPath.path
     ])
     layout.putAll(getQTBinaries(sdkPath.path, SDK_LAYOUT_PATTERNS.binaries))
 
     validateSDKConfiguration(layout)
 
     return layout
+  }
+
+  @Override
+  protected void configureBinaries(Map<String, String> sdkLayout, String qtToolsSuffix = '') {
+    configureBaseBinaries(sdkLayout, qtToolsSuffix)
+
+    this.deployTool = sdkLayout.containsKey('deploy') ? sdkLayout.deploy :
+      Paths.get(binaries, "macdeployqt")
+    LOGGER.info("Configured deployTool: '${deployTool}'")
   }
 }

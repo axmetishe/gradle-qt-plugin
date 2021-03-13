@@ -49,7 +49,7 @@ gradlePlugin {
   plugins {
     qtPlugin {
       id = 'org.platops.gradle.plugins.qt.gradle-qt-plugin'
-      displayName = project.description
+      displayName = 'Gradle QT Plugin'
       implementationClass = 'org.platops.gradle.plugins.qt.QTPlugin'
     }
   }

@@ -38,6 +38,7 @@ abstract class QTToolchain {
   String mocTool
   String uicTool
   String rccTool
+  String deployTool
   Boolean brew = false
   List<String> compilerArgs = []
   List<String> linkerArgs = []
@@ -48,7 +49,7 @@ abstract class QTToolchain {
 
   protected static final String SDK_PATH_VARIABLE = 'QT_PATH'
   protected static final Map<String, Pattern> SDK_LAYOUT_PATTERNS = [
-    binaries : ~/(moc|rcc|uic)?(-qt\d|\.exe)?/,
+    binaries : ~/(win|mac)?(deployqt|moc|rcc|uic)?(-qt\d|\.exe)?/,
     includes : ~/((Qt)(\w)+)/,
     libraries: ~/((lib)?(Qt)(\w)+(\.)(lib|so|a))/,
     versions: ~/((\d)(\.)?)+/,
@@ -107,20 +108,7 @@ abstract class QTToolchain {
       String qtToolsSuffix = sdkLayout.containsKey('suffix') ? sdkLayout.suffix : ''
       LOGGER.info("Tools suffix determined as '${qtToolsSuffix}'")
 
-      this.mocTool = sdkLayout.containsKey('moc') ? sdkLayout.moc :
-        Paths.get(binaries, "moc${qtToolsSuffix}")
-      this.uicTool = sdkLayout.containsKey('uic') ? sdkLayout.uic :
-        Paths.get(binaries, "uic${qtToolsSuffix}")
-      this.rccTool = sdkLayout.containsKey('rcc') ? sdkLayout.rcc :
-        Paths.get(binaries, "rcc${qtToolsSuffix}")
-
-      LOGGER.info("Configured sdkPath: '${sdkPath}'")
-      LOGGER.info("Configured binaries: '${binaries}'")
-      LOGGER.info("Configured includes: '${includes}'")
-      LOGGER.info("Configured libraries: '${libraries}'")
-      LOGGER.info("Configured mocTool: '${mocTool}'")
-      LOGGER.info("Configured uicTool: '${uicTool}'")
-      LOGGER.info("Configured rccTool: '${rccTool}'")
+      configureBinaries(sdkLayout, qtToolsSuffix)
     } else {
       throw new Exception(
         """
@@ -131,6 +119,27 @@ abstract class QTToolchain {
         """
       )
     }
+  }
+
+  protected void configureBinaries(Map<String, String> sdkLayout, String qtToolsSuffix = '') {
+    configureBaseBinaries(sdkLayout, qtToolsSuffix)
+  }
+
+  protected void configureBaseBinaries(Map<String, String> sdkLayout, String qtToolsSuffix = '') {
+    this.mocTool = sdkLayout.containsKey('moc') ? sdkLayout.moc :
+      Paths.get(binaries, "moc${qtToolsSuffix}")
+    this.uicTool = sdkLayout.containsKey('uic') ? sdkLayout.uic :
+      Paths.get(binaries, "uic${qtToolsSuffix}")
+    this.rccTool = sdkLayout.containsKey('rcc') ? sdkLayout.rcc :
+      Paths.get(binaries, "rcc${qtToolsSuffix}")
+
+    LOGGER.info("Configured sdkPath: '${sdkPath}'")
+    LOGGER.info("Configured binaries: '${binaries}'")
+    LOGGER.info("Configured includes: '${includes}'")
+    LOGGER.info("Configured libraries: '${libraries}'")
+    LOGGER.info("Configured mocTool: '${mocTool}'")
+    LOGGER.info("Configured uicTool: '${uicTool}'")
+    LOGGER.info("Configured rccTool: '${rccTool}'")
   }
 
   protected Map<String, String> initializeSDK(File sdkProposedPath) {
@@ -180,13 +189,13 @@ abstract class QTToolchain {
 
   protected static String getQtBinariesSuffix(List<File> binaries) {
     //noinspection GroovyAssignabilityCheck
-    return ((binaries.first().name =~ SDK_LAYOUT_PATTERNS.binaries)[0][2]) ?: ''
+    return ((binaries.first().name =~ SDK_LAYOUT_PATTERNS.binaries)[0][3]) ?: ''
   }
 
   protected Map<String, String> osSpecificQTLayout(File sdkPath) {
     LOGGER.info("Will try to proceed with default OS layout")
     Map<String, String> layout = [
-      binaries: sdkPath.path,
+      binaries : sdkPath.path,
       libraries: '/usr/lib64',
     ]
     layout.putAll(getQTBinaries(sdkPath.path, SDK_LAYOUT_PATTERNS.binaries))
@@ -201,10 +210,14 @@ abstract class QTToolchain {
     List<File> qtBinaries = findFiles(sdkPath, binariesPattern)
     String qtToolsSuffix = getQtBinariesSuffix(qtBinaries)
 
+    LOGGER.info("deploy: ${qtBinaries.find { it.name.contains('deploy') }}")
     return [
       rcc: qtBinaries.find { it.name.contains('rcc') }.path,
       moc: qtBinaries.find { it.name.contains('moc') }.path,
       uic: qtBinaries.find { it.name.contains('uic') }.path,
+      deploy: qtBinaries.find { it.name.contains('deploy') }
+        ? qtBinaries.find { it.name.contains('deploy') }.path
+        : '',
       suffix: qtToolsSuffix
     ]
   }

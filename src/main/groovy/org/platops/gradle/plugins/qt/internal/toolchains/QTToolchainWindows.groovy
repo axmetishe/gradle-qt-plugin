@@ -25,6 +25,7 @@ package org.platops.gradle.plugins.qt.internal.toolchains
 import org.platops.gradle.plugins.qt.QTPluginExtension
 import org.gradle.internal.os.OperatingSystem
 
+import java.nio.file.Paths
 import java.util.regex.Pattern
 
 class QTToolchainWindows extends QTToolchain {
@@ -50,6 +51,7 @@ class QTToolchainWindows extends QTToolchain {
 
     return librariesList
   }
+
   @Override
   protected Map<String, String> initializeSDK(File sdkProposedPath) {
     LOGGER.info("Initialize QT Toolchain with SDK provided at '${sdkProposedPath}'")
@@ -57,5 +59,14 @@ class QTToolchainWindows extends QTToolchain {
     Map<String, String> sdkLayout = produceDefaultQTLayout(sdkProposedPath)
 
     return sdkLayout
+  }
+
+  @Override
+  protected void configureBinaries(Map<String, String> sdkLayout, String qtToolsSuffix = '') {
+    configureBaseBinaries(sdkLayout, qtToolsSuffix)
+
+    this.deployTool = sdkLayout.containsKey('deploy') ? sdkLayout.deploy :
+      Paths.get(binaries, "windeployqt")
+    LOGGER.info("Configured deployTool: '${deployTool}'")
   }
 }
