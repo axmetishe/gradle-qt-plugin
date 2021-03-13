@@ -210,7 +210,6 @@ abstract class QTToolchain {
     List<File> qtBinaries = findFiles(sdkPath, binariesPattern)
     String qtToolsSuffix = getQtBinariesSuffix(qtBinaries)
 
-    LOGGER.info("deploy: ${qtBinaries.find { it.name.contains('deploy') }}")
     return [
       rcc: qtBinaries.find { it.name.contains('rcc') }.path,
       moc: qtBinaries.find { it.name.contains('moc') }.path,
