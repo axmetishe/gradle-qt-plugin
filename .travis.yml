@@ -14,9 +14,6 @@ jobs:
     - stage: build
       script:
         - ./gradlew build
-    - stage: check
-      script:
-        - ./gradlew sonarqube -Dsonar.login=$SONARQUBE_TOKEN
     - stage: plugin publish
       script:
         - echo "Deploying to plugin portal ..."
