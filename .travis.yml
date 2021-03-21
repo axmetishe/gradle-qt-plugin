@@ -20,10 +20,9 @@ jobs:
     - stage: plugin publish
       script:
         - echo "Deploying to plugin portal ..."
-        - ./gradlew publishPlugins
+        - ./gradlew publishPlugins -Dgradle.publish.key=$GRADLE_PUBLISH_KEY -Dgradle.publish.secret=$GRADLE_PUBLISH_SECRET
       on:
         branch: master
-        env: _JAVA_OPTIONS="-Dgradle.publish.key=$GRADLE_PUBLISH_KEY -Dgradle.publish.secret=$GRADLE_PUBLISH_SECRET"
 
 cache:
   directories:
