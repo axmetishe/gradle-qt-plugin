@@ -24,10 +24,16 @@ package org.platops.gradle.plugins.qt
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.logging.Logger
+import org.gradle.language.cpp.CppApplication
+import org.gradle.language.cpp.CppBinary
 import org.gradle.language.cpp.tasks.CppCompile
+import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.tasks.AbstractLinkTask
+import org.gradle.nativeplatform.test.cpp.CppTestSuite
 import org.platops.gradle.plugins.qt.internal.QTToolchainFactory
+import org.platops.gradle.plugins.qt.internal.tasks.QTBundleTask
 import org.platops.gradle.plugins.qt.internal.tasks.QTMetaObjectTask
 import org.platops.gradle.plugins.qt.internal.tasks.QTResourcesTask
 import org.platops.gradle.plugins.qt.internal.tasks.QTUIObjectTask
@@ -129,6 +135,30 @@ class QTPlugin implements Plugin<Project> {
         linkTask.name.toLowerCase().contains('debug')).each { File includeLibrary ->
 
         linkTask.libs.from includeLibrary.path
+      }
+    }
+
+    project.components.configureEach { SoftwareComponent softwareComponent ->
+      if (softwareComponent instanceof CppApplication || softwareComponent instanceof CppTestSuite) {
+        softwareComponent.binaries.whenElementFinalized { CppBinary cppBinary ->
+          NativePlatform binaryTargetPlatform = cppBinary.compileTask.get().targetPlatform.get()
+          String bundleTaskName = "${TASK_PREFIX}Bundle${cppBinary.name.capitalize()}"
+          if (!binaryTargetPlatform.operatingSystem.isLinux()) {
+            LOGGER.info("Register ${QTBundleTask.simpleName}")
+            project.tasks.register(bundleTaskName, QTBundleTask) {
+              description = 'Generate QT Bundle'
+              group = EXTENSION_NAME
+              dependsOn = [ cppBinary.linkTask.get(), cppBinary.installTask.get() ]
+              deployCmd = qtToolchain.deployTool
+              targetPlatform = binaryTargetPlatform.operatingSystem.toFamilyName()
+              binaryFile = cppBinary.getExecutableFile().get().getAsFile()
+              buildVariant = cppBinary.isOptimized() ? 'release' : 'debug'
+              installPath = cppBinary.getInstallDirectory().dir('lib').get()
+            }
+
+            cppBinary.installTask.get().finalizedBy(project.tasks.findByName(bundleTaskName))
+          }
+        }
       }
     }
   }

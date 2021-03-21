@@ -31,30 +31,38 @@ class QTPluginExtension {
   @SuppressWarnings("GroovyAssignabilityCheck")
   Map<String, Map<String, Serializable>> resources = [
     'src/main/resources': [
-      includes: '*.qrc',
+      includes  : '*.qrc',
       targetPath: "${project.buildDir}/generated-sources",
-      flat: true
+      flat      : true
     ]
   ]
   @SuppressWarnings("GroovyAssignabilityCheck")
   Map<String, Map<String, Serializable>> sources = [
     'src/main/meta-headers': [
-      includes: '**/*.h',
+      includes  : '**/*.h',
       targetPath: "${project.buildDir}/generated-sources/sources",
-      flat: true
+      flat      : true
     ]
   ]
   @SuppressWarnings("GroovyAssignabilityCheck")
   Map<String, Map<String, Serializable>> ui = [
     'src/resources/ui': [
-      includes: '**/*.ui',
+      includes  : '**/*.ui',
       targetPath: "${project.buildDir}/generated-sources/ui",
-      flat: true
+      flat      : true
     ]
   ]
 
   List<String> modules = [
     'QtCore'
+  ]
+
+  String plistFile = ''
+
+  Map<String, List<String>> deployParameters = [
+    windows: [],
+    macos  : [],
+    linux  : [],
   ]
 
   QTPluginExtension(Project project) {
