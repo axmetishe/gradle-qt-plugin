@@ -97,7 +97,7 @@ publishing {
           }
         }
         scm {
-          url = "${vcsBaseUrl}/${project.name}"
+          url = vcsRepoUrl
         }
       }
     }

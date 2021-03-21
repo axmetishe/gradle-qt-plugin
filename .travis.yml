@@ -12,3 +12,13 @@ addons:
 script:
   - ./gradlew build
   - ./gradlew sonarqube -Dsonar.login=$SONARQUBE_TOKEN
+
+jobs:
+  include:
+    - stage: plugin publish
+      script:
+        - echo "Deploying to plugin portal ..."
+        - ./gradlew publishPlugins
+      on:
+        branch: master
+        env: JAVA_OPTIONS="-Dgradle.publish.key=$GRADLE_PUBLISH_KEY -Dgradle.publish.secret=$GRADLE_PUBLISH_SECRET"
