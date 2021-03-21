@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
   id 'groovy'
   id 'groovy-gradle-plugin'
@@ -5,17 +7,12 @@ plugins {
   id 'com.gradle.plugin-publish' version '0.12.0'
   id 'com.github.hierynomus.license' version '0.15.0'
   id "org.sonarqube" version "3.1.1"
+  id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
 repositories {
   mavenCentral()
   jcenter()
-}
-
-publishing {
-  repositories {
-    mavenLocal()
-  }
 }
 
 wrapper {
@@ -24,12 +21,25 @@ wrapper {
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '0.0.1-SNAPSHOT'
-description = 'Generate QT resources and add to sourceSet'
+version = '1.0.0'
+description = 'Gradle QT plugin for framework specific tasks integration'
+
+String vcsBaseUrl = "https://github.com/axmetishe"
+String vcsRepoUrl = "${vcsBaseUrl}/${project.name}.git"
 
 ext {
   javaVersion = 11
   groovyVersion = '3.0.7'
+  manifestAttributes = [
+    'SCM-URL': vcsRepoUrl,
+    'SCM-Branch': grgit.branch.current().getName(),
+    'SCM-Revision' : grgit.head().abbreviatedId,
+    'Build-Version': project.version,
+    'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+    'Built-By': "Gradle ${gradle.gradleVersion}",
+    'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+    'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
+  ]
 }
 
 license {
@@ -55,15 +65,58 @@ gradlePlugin {
   }
 }
 
+publishing {
+  repositories {
+    mavenLocal()
+  }
+
+  publications {
+    mavenJava(MavenPublication) {
+      jar {
+        manifest {
+          attributes(project.ext.manifestAttributes)
+        }
+      }
+      pom {
+        name = project.name
+        description = project.description
+        url = "${vcsBaseUrl}/${project.name}"
+
+        licenses {
+          license {
+            name = 'The Apache License, Version 2.0'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+
+        developers {
+          developer {
+            id = 'axmetishe'
+            name = 'Evgeny Akhmetkhanov'
+            email = 'axmetishe+gradle-qt-plugin@gmail.com'
+          }
+        }
+        scm {
+          url = "${vcsBaseUrl}/${project.name}"
+        }
+      }
+    }
+  }
+}
+
 pluginBundle {
   description = project.description
-  tags = ['qt', 'qrc', 'moc', 'uic', 'rcc']
-  website = 'https://github.com/axmetishe'
-  vcsUrl = 'https://github.com/axmetishe/gradle-qt-plugin'
+  tags = ['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp']
+  website = vcsBaseUrl
+  vcsUrl = vcsRepoUrl
 
-  mavenCoordinates {
-    groupId = project.group
-    artifactId = project.name
+  plugins {
+    qtPlugin {
+      displayName = 'Gradle QT Plugin'
+    }
+  }
+  manifest {
+    attributes(project.ext.manifestAttributes)
   }
 }
 
