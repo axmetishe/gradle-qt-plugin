@@ -72,9 +72,17 @@ class QTToolchainOSX extends QTToolchain {
           LOGGER.info("Homebrew QT - linkage over Release variant of '${module}'")
           libraryName = module
         }
-        File library = findFiles(moduleLibrary, libraryName).sort().first()
-        LOGGER.info("Adding '${library.name}' as library.")
-        librariesList.add(library)
+        List<File> availableLibraries = findFiles(moduleLibrary, libraryName)
+        if (availableLibraries) {
+          File library = availableLibraries.sort().first()
+          LOGGER.info("Adding '${library.name}' as library.")
+          librariesList.add(library)
+        } else {
+          LOGGER.warn("""
+            Unable to find binary for '${libraryName}' library from '${module}' module.
+            Please check your SDK installation.
+          """)
+        }
       }
     }
 
