@@ -78,11 +78,23 @@ class QTToolchainOSX extends QTToolchain {
           LOGGER.info("Adding '${library.name}' as library.")
           librariesList.add(library)
         } else {
-          LOGGER.warn("""
-            Unable to find binary for '${libraryName}' library from '${module}' module.
-            Please check your SDK installation.
-          """)
+          LOGGER.warn("Warning: Unable to find binary for '${libraryName}' library from '${module}' module.")
+          if (debuggable) {
+            libraryName = module
+            availableLibraries = findFiles(moduleLibrary, libraryName)
+
+            // We will try to use Release library variant the same way as with Homebrew installation
+            if (availableLibraries) {
+              LOGGER.warn("Warning: Adding '${libraryName}' library instead.")
+              File library = availableLibraries.sort().first()
+              LOGGER.info("Adding '${library.name}' as library.")
+              this.brew = true
+              librariesList.add(library)
+            }
+          }
         }
+      } else {
+        LOGGER.warn("Couldn't find '${module}' framework directory")
       }
     }
 

@@ -55,6 +55,9 @@ class QTBundleTask extends DefaultTask {
   public String buildVariant
 
   @Input
+  public Boolean useDebugLibraries
+
+  @Input
   public String installPath
 
   @Input
@@ -80,6 +83,14 @@ class QTBundleTask extends DefaultTask {
 
   void setBuildVariant(String buildVariant) {
     this.buildVariant = buildVariant
+  }
+
+  Boolean getUseDebugLibraries() {
+    return useDebugLibraries
+  }
+
+  void setUseDebugLibraries(Boolean useDebugLibraries) {
+    this.useDebugLibraries = useDebugLibraries
   }
 
   String getInstallPath() {
@@ -181,7 +192,7 @@ class QTBundleTask extends DefaultTask {
         deployArgs.add("-libpath=${installPath}")
         deployArgs.add('-always-overwrite')
         deployArgs.add('-verbose=1')
-        buildVariant == 'debug' ? deployArgs.add('-use-debug-libs') : null
+        buildVariant == 'debug' ? (useDebugLibraries ? deployArgs.add('-use-debug-libs') : null) : null
         break
     }
     deployArgs.addAll(extension.deployParameters[targetPlatform])
