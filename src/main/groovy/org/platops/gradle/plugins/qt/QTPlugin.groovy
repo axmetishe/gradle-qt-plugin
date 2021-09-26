@@ -153,6 +153,7 @@ class QTPlugin implements Plugin<Project> {
               targetPlatform = binaryTargetPlatform.operatingSystem.toFamilyName()
               binaryFile = cppBinary.getExecutableFile().get().getAsFile()
               buildVariant = cppBinary.isOptimized() ? 'release' : 'debug'
+              useDebugLibraries = cppBinary.isOptimized() ? false : !qtToolchain.brew
               installPath = cppBinary.getInstallDirectory().dir('lib').get()
             }
 

@@ -21,7 +21,7 @@ wrapper {
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '1.0.1'
+version = '1.0.2'
 description = 'Gradle QT plugin for framework specific tasks integration'
 
 String vcsBaseUrl = "https://github.com/axmetishe"
@@ -97,7 +97,7 @@ publishing {
           }
         }
         scm {
-          url = vcsRepoUrl
+          url = "${vcsBaseUrl}/${project.name}"
         }
       }
     }
