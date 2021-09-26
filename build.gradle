@@ -21,7 +21,7 @@ wrapper {
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '1.0.3'
+version = '1.0.4'
 description = 'Gradle QT plugin for framework specific tasks integration'
 
 String vcsBaseUrl = "https://github.com/axmetishe"
@@ -107,7 +107,7 @@ publishing {
 pluginBundle {
   description = project.description
   tags = ['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp']
-  website = vcsBaseUrl
+  website = "${vcsBaseUrl}/${project.name}"
   vcsUrl = vcsRepoUrl
 
   plugins {
