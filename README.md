@@ -16,12 +16,12 @@ Example repository - [Gradle QT Application Example](https://github.com/axmetish
 plugins {
   id 'idea'
   id 'cpp-application'
-  id 'org.platops.gradle.plugins.qt.gradle-qt-plugin' version '1.0.1'
+  id 'org.platops.gradle.plugins.qt.gradle-qt-plugin' version '1.0.4'
 }
 
 wrapper {
   distributionType = Wrapper.DistributionType.BIN
-  gradleVersion = '6.7.1'
+  gradleVersion = '8.6'
 }
 
 group = 'org.platops.gradle.plugins.qt.example'
