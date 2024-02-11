@@ -20,7 +20,7 @@ wrapper {
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '1.1.0'
+version = '1.1.1-SNAPSHOT'
 description = 'Gradle QT plugin for framework specific tasks integration'
 
 String vcsBaseUrl = "https://github.com/axmetishe"
