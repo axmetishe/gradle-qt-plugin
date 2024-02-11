@@ -5,7 +5,7 @@ plugins {
   id 'groovy-gradle-plugin'
   id 'maven-publish'
   id 'com.gradle.plugin-publish' version '1.2.1'
-  id 'com.github.hierynomus.license' version '0.15.0'
+  id 'com.github.hierynomus.license' version '0.16.1'
   id 'org.sonarqube' version '3.1.1'
   id 'org.ajoberstar.grgit' version '3.1.1-rc.1'
 }
@@ -16,11 +16,11 @@ repositories {
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
-  gradleVersion = '6.9.3'
+  gradleVersion = '7.6.4'
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '1.1.1-SNAPSHOT'
+version = '1.2.0-SNAPSHOT'
 description = 'Gradle QT plugin for framework specific tasks integration'
 
 String vcsBaseUrl = "https://github.com/axmetishe"
@@ -57,6 +57,12 @@ jar {
       'JDK': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
       'OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
     ], "Build")
+  }
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(11)
   }
 }
 
@@ -117,7 +123,3 @@ dependencies {
   implementation "org.codehaus.groovy:groovy:${project.ext.groovyVersion}"
 }
 
-tasks.withType(JavaCompile).configureEach {
-  sourceCompatibility = '1.8'
-  targetCompatibility = '1.8'
-}
