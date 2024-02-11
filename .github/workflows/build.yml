@@ -17,15 +17,14 @@ jobs:
     steps:
       - name: Select Java version
         run: |
-          echo "${{ github.ref }}"
           case "${{ github.ref }}" in
-            "release/1.1.x")
+            "refs/heads/release/1.1.x")
               echo SELECTED_JAVA_VERSION=8 >> "${GITHUB_ENV}"
               ;;
-            "release/1.2.x")
+            "refs/heads/release/1.2.x")
               echo SELECTED_JAVA_VERSION=11 >> "${GITHUB_ENV}"
               ;;
-            "release/1.3.x")
+            "refs/heads/release/1.3.x")
               echo SELECTED_JAVA_VERSION=17 >> "${GITHUB_ENV}"
               ;;
             *)
