@@ -65,12 +65,12 @@ java {
 gradlePlugin {
   website = "${vcsBaseUrl}/${project.name}"
   vcsUrl = vcsRepoUrl
-  description = project.description
   plugins {
     qtPlugin {
       id = 'org.platops.gradle.plugins.qt.gradle-qt-plugin'
       displayName = 'Gradle QT Plugin'
       implementationClass = 'org.platops.gradle.plugins.qt.QTPlugin'
+      description = project.description
       tags.set(['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp'])
     }
   }
