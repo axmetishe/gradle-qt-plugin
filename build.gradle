@@ -6,8 +6,8 @@ plugins {
   id 'maven-publish'
   id 'com.gradle.plugin-publish' version '1.2.1'
   id 'com.github.hierynomus.license' version '0.16.1'
-  id 'org.sonarqube' version '3.1.1'
-  id 'org.ajoberstar.grgit' version '3.1.1-rc.1'
+  id 'org.sonarqube' version '4.4.1.3373'
+  id 'org.ajoberstar.grgit' version '5.0.0-rc.3'
 }
 
 repositories {
@@ -16,11 +16,11 @@ repositories {
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
-  gradleVersion = '7.6.4'
+  gradleVersion = '8.6'
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '1.2.0'
+version = '1.3.0-SNAPSHOT'
 description = 'Gradle QT plugin for framework specific tasks integration'
 
 String vcsBaseUrl = "https://github.com/axmetishe"
@@ -58,7 +58,7 @@ jar {
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(11)
+    languageVersion = JavaLanguageVersion.of(17)
   }
 }
 
@@ -74,13 +74,6 @@ gradlePlugin {
       tags.set(['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp'])
     }
   }
-}
-
-pluginBundle {
-  description = project.description
-  tags = ['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp']
-  website = "${vcsBaseUrl}/${project.name}"
-  vcsUrl = vcsRepoUrl
 }
 
 publishing {
