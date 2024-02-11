@@ -6,7 +6,7 @@ Gradle plugin for QT build process integration with
 ## Supported configurations
 | Plugin Version | JVM | Gradle |                                                                                                        Build Status                                                                                                         |
 |:--------------:|:---:|:------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|     1.1.x      |  8  | 6.9.1  | [![Build Status](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml/badge.svg?branch=release/1.1.x)](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml?branch=release/1.1.x) |
+|     1.1.x      |  8  | 6.9.3  | [![Build Status](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml/badge.svg?branch=release/1.1.x)](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml?branch=release/1.1.x) |
 |     1.2.x      | 11  | 7.6.4  | [![Build Status](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml/badge.svg?branch=release/1.2.x)](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml?branch=release/1.2.x) |
 |     1.3.x      | 17  |  8.6   | [![Build Status](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml/badge.svg?branch=release/1.3.x)](https://github.com/axmetishe/gradle-qt-plugin/actions/workflows/build.yml?branch=release/1.3.x) |
 
