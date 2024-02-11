@@ -76,6 +76,13 @@ gradlePlugin {
   }
 }
 
+pluginBundle {
+  description = project.description
+  tags = ['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp']
+  website = "${vcsBaseUrl}/${project.name}"
+  vcsUrl = vcsRepoUrl
+}
+
 publishing {
   repositories {
     mavenLocal()
