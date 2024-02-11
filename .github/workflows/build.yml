@@ -17,7 +17,8 @@ jobs:
     steps:
       - name: Select Java version
         run: |
-          case $branch in
+          echo "${{ github.ref }}"
+          case "${{ github.ref }}" in
             "release/1.1.x")
               echo SELECTED_JAVA_VERSION=8 >> "${GITHUB_ENV}"
               ;;
