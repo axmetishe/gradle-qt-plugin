@@ -14,6 +14,7 @@ on:
 jobs:
   build-project:
     runs-on: ubuntu-latest
+    environment: qt-plugin
     steps:
       - name: Select Java version
         run: |
