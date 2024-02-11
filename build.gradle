@@ -26,10 +26,6 @@ description = 'Gradle QT plugin for framework specific tasks integration'
 String vcsBaseUrl = "https://github.com/axmetishe"
 String vcsRepoUrl = "${vcsBaseUrl}/${project.name}.git"
 
-ext {
-  groovyVersion = '3.0.7'
-}
-
 license {
   ignoreFailures = true
   header = file('LICENSE.txt')
@@ -67,20 +63,17 @@ java {
 }
 
 gradlePlugin {
+  website = "${vcsBaseUrl}/${project.name}"
+  vcsUrl = vcsRepoUrl
+  description = project.description
   plugins {
     qtPlugin {
       id = 'org.platops.gradle.plugins.qt.gradle-qt-plugin'
       displayName = 'Gradle QT Plugin'
       implementationClass = 'org.platops.gradle.plugins.qt.QTPlugin'
+      tags.set(['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp'])
     }
   }
-}
-
-pluginBundle {
-  description = project.description
-  tags = ['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp']
-  website = "${vcsBaseUrl}/${project.name}"
-  vcsUrl = vcsRepoUrl
 }
 
 publishing {
@@ -120,6 +113,4 @@ publishing {
 
 dependencies {
   api gradleApi()
-  implementation "org.codehaus.groovy:groovy:${project.ext.groovyVersion}"
 }
-
