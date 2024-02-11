@@ -22,7 +22,7 @@ Example repository - [Gradle QT Application Example](https://github.com/axmetish
 plugins {
   id 'idea'
   id 'cpp-application'
-  id 'org.platops.gradle.plugins.qt.gradle-qt-plugin' version '1.0.4'
+  id 'org.platops.gradle.plugins.qt.gradle-qt-plugin' version '1.3.0'
 }
 
 wrapper {

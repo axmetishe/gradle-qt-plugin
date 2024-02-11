@@ -2,8 +2,6 @@ name: Build
 
 on:
   push:
-#    branches:
-#      - develop
   workflow_dispatch:
     inputs:
       release:
@@ -14,6 +12,7 @@ on:
 jobs:
   build-project:
     runs-on: ubuntu-latest
+    environment: qt-plugin
     steps:
       - name: Select Java version
         run: |
@@ -42,9 +41,14 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          cache-read-only: false
+          cache-write-only: false
+          cache-overwrite-existing: true
 
       - name: Run build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
 
       - name: Publish plugin to portal
         if: ${{ github.event.inputs.release || false }}
@@ -54,4 +58,5 @@ jobs:
         run: |
           ./gradlew publishPlugins \
             -Dgradle.publish.key=$GRADLE_PUBLISH_KEY \
-            -Dgradle.publish.secret=$GRADLE_PUBLISH_SECRET
+            -Dgradle.publish.secret=$GRADLE_PUBLISH_SECRET \
+            --no-daemon

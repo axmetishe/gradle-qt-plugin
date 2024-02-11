@@ -20,7 +20,7 @@ wrapper {
 }
 
 group = 'org.platops.gradle.plugins.qt'
-version = '1.0.5-SNAPSHOT'
+version = '1.4.0-SNAPSHOT'
 description = 'Gradle QT plugin for framework specific tasks integration'
 
 String vcsBaseUrl = "https://github.com/axmetishe"
@@ -56,15 +56,21 @@ jar {
   }
 }
 
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
 gradlePlugin {
   website = "${vcsBaseUrl}/${project.name}"
   vcsUrl = vcsRepoUrl
-  description = project.description
   plugins {
     qtPlugin {
       id = 'org.platops.gradle.plugins.qt.gradle-qt-plugin'
       displayName = 'Gradle QT Plugin'
       implementationClass = 'org.platops.gradle.plugins.qt.QTPlugin'
+      description = project.description
       tags.set(['qt', 'qrc', 'moc', 'uic', 'rcc', 'gradle-native', 'c', 'cpp'])
     }
   }
@@ -96,6 +102,7 @@ publishing {
             email = 'axmetishe+gradle-qt-plugin@gmail.com'
           }
         }
+
         scm {
           url = "${vcsBaseUrl}/${project.name}"
         }
@@ -106,9 +113,4 @@ publishing {
 
 dependencies {
   api gradleApi()
-}
-
-tasks.withType(JavaCompile).configureEach {
-  sourceCompatibility = '1.8'
-  targetCompatibility = '1.8'
 }
